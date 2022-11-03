@@ -85,7 +85,7 @@ fn namespace_upper_bound(input: &[u8]) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::length_prefixed::to_length_prefixed;
+    use crate::prefix::length_prefixed::to_length_prefixed;
     use cosmwasm_std::testing::MockStorage;
 
     #[test]
@@ -156,10 +156,7 @@ mod tests {
         let elements: Vec<Record> = iter.collect();
         assert_eq!(
             elements,
-            vec![
-                (b"snowy".to_vec(), b"day".to_vec()),
-                (b"bar".to_vec(), b"none".to_vec()),
-            ]
+            vec![(b"snowy".to_vec(), b"day".to_vec()), (b"bar".to_vec(), b"none".to_vec()),]
         );
     }
 
@@ -186,14 +183,9 @@ mod tests {
         assert_eq!(res[0], (b"bar".to_vec(), b"none".to_vec()));
 
         // make sure start and end are applied properly
-        let res_count = range_with_prefix(
-            &storage,
-            &prefix,
-            Some(b"bas"),
-            Some(b"sno"),
-            Order::Ascending,
-        )
-        .count();
+        let res_count =
+            range_with_prefix(&storage, &prefix, Some(b"bas"), Some(b"sno"), Order::Ascending)
+                .count();
         assert_eq!(res_count, 0);
 
         let res: Vec<Record> =
@@ -210,10 +202,7 @@ mod tests {
         assert_eq!(namespace_upper_bound(b"fo\xfe"), b"fo\xff".to_vec());
         assert_eq!(namespace_upper_bound(b"fo\xff"), b"fp\x00".to_vec());
         // multiple \xff roll over
-        assert_eq!(
-            namespace_upper_bound(b"fo\xff\xff\xff"),
-            b"fp\x00\x00\x00".to_vec()
-        );
+        assert_eq!(namespace_upper_bound(b"fo\xff\xff\xff"), b"fp\x00\x00\x00".to_vec());
         // \xff not at the end are ignored
         assert_eq!(namespace_upper_bound(b"\xffabc"), b"\xffabd".to_vec());
     }
